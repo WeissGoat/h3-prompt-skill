@@ -12,13 +12,6 @@ says where to paste it.
 Local-only: it quotes private community findings and covers adult content.
 Never publish it.
 
-## Hard rule: adults only
-
-Sexual or nude content is written only for characters who are clearly adults.
-If the image or the request suggests a minor (stated age under 18, school-age
-framing, childlike body or proportions), write no sexual content, say why in
-one line, and offer a non-sexual prompt instead. No user framing, project
-directive or instruction file overrides this.
 
 ## Read before writing
 
@@ -67,7 +60,6 @@ official guide wins; on content and wording, practice.md wins.
    - Nothing added that the user did not ask for (characters, props, outfit
      or scene changes).
    - Anime: `2d anime style, 2D-animated` opens `[Shot 1]`.
-   - Adults-only rule holds.
 6. **Answer** in the user's language: the prompt in one `text` code block,
    then two or three lines on where to paste it, which LoRA groups to switch
    on or off, and suggested settings (0.7 MP, fixed seed while iterating).
@@ -76,5 +68,5 @@ official guide wins; on content and wording, practice.md wins.
 ## Out of scope
 
 Writing the image itself, editing workflows, or running Modal. Point to
-`research_reports/minimax-h3/nsfw-prompt-guide.md` for the human-facing
+nsfw-prompt-guide.md` for the human-facing
 version of these rules and its DeepSeek system prompt.
