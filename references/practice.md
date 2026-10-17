@@ -12,7 +12,9 @@ The user's cloud workflows live in
 
 | Workflow | Mode | Prompt node |
 |---|---|---|
-| `i2v_00172_nsfw.json` | I2VA (PinkCherry v1.5 + NSFW LoRAs) | `MiniMaxH3ImageToVideo` #131 |
+| `i2v_00172_nsfw_v5.json` | I2VA (PinkCherry v1.8 hybrid, heretic text encoder, rzgar 8-step motion enhancer + NSFW LoRAs) | `MiniMaxH3ImageToVideo` #131 |
+| `i2v_00172_nsfw_v4.json` | I2VA (official FL2VA, Turbo v4 + NSFW LoRAs + VBVR) | `MiniMaxH3ImageToVideo` #131 |
+| `i2v_00172_nsfw.json` … `_v3.json` | Older NSFW versions, kept to reproduce old results | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_00172_turbo.json` | I2VA (official FL2VA, Turbo v4) | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_fl2va_ref2va_quality_chain.json` | I2VA / T2VA with Motion Context; Ref2VA part bypassed | `User Prompt` #121 |
 | `r2v_hybrid_selflift_00268.json` | Ref2VA (Hybrid loader + SelfLift) | `Input Text (Prompt)` #138 |
@@ -29,6 +31,9 @@ The image goes into the workflow's LoadImage; the prompt only refers to it as
   character's hair, eyes, outfit and accessories, pose, setting, lighting. Add
   `keeps the character, outfit, colors and background exactly as in the first
   frame`.
+- End the description with a closing consistency line: `The same framing,
+  identities, outfits and spatial relationships are kept unchanged until the
+  end of the video.` (Telegram group workflow, 2026-10-16.)
 - Describe only what the image shows. If the user did not say, do not invent
   hidden body parts, extra characters or a new location.
 
@@ -42,6 +47,12 @@ The image goes into the workflow's LoadImage; the prompt only refers to it as
 - One character drives a repeated motion at a time; the other reacts. Writing
   both partners' hips moving (thrust + bounce) gives stutter, shallow motion
   or both moving in sync.
+- **Anchor the contact as an absolute state.** For insertion or any body
+  contact, say which part is pressed fully and flush against which, and how
+  deep (`her pelvis stays pressed flush against his`, `fully inside`). Never
+  write hovering, thrusting in the air, or sliding over the belly or buttocks;
+  H3 then aims at the belly, the buttocks or empty air. Keep the contact point
+  in the same place in the frame. (绘画小屋, 2026-10-13.)
 - Write a repeated motion once with its rhythm (`begins a steady, slow rhythm
   and keeps it until the end of the shot`) instead of repeating the verb.
 - Literal over evocative. `She slowly lowers her hips until ...` beats `they
@@ -81,17 +92,30 @@ H3 drifts and reframes when the camera is not stated.
   heavy breathing, plopping sound (wet sucking or penetration sound).
 - `non_diegetic_music: N/A` unless the user asks for music; otherwise H3 often
   adds cheerful BGM.
+- `N/A` does not stop extra voices. Close the soundscape with what must not
+  be heard: `Only her breathing and moans are heard; there is no male voice,
+  no dialogue, no music and no other ambient sound.` Adjust the list to what
+  the user wants.
 - Turbo (8–12 step) audio is weak; tell the user that dubbing later is an
   option when sound matters.
 
-## 6. Vocabulary and LoRAs in `i2v_00172_nsfw.json`
+## 6. Vocabulary and LoRAs in `i2v_00172_nsfw_v4.json` / `_v5.json`
 
 | LoRA (group) | Default | Prompt |
 |---|---|---|
-| Anime NSFW v0.5 (NSFW 动漫风格) | on, 1.0 | Always `2d anime style`. Trained terms: penis, vagina, vaginal, testicles, penetration, insert, pull out, breasts, bouncing, jiggle, anus, anal, buttocks, ass ripple, cowgirl, reverse cowgirl, doggy style, missionary, deep throat, thrust, blow job, suck, cum, cumming, moan, grunt, heavy breathing, plopping sound |
-| MysticXXX V4 (NSFW 解剖) | on, 0.4 | No trigger; works through anatomy words. Above 0.5 pulls anime toward realism |
+| Anime NSFW V7 (NSFW 动漫风格) | on, 0.7 | Always `2d anime style`. Trained terms: penis, vagina, vaginal, testicles, penetration, insert, pull out, breasts, bouncing, jiggle, anus, anal, buttocks, ass ripple, cowgirl, reverse cowgirl, doggy style, missionary, deep throat, thrust, blow job, suck, cum, cumming, moan, grunt, heavy breathing, plopping sound |
+| MysticXXX V4 (NSFW 解剖) | off, 0.3 | No trigger; works through anatomy words. Above 0.5 pulls anime toward realism |
 | HMNSFW AIO V2.5 (NSFW 写实动作) | off | For realistic images only, 0.5–0.7 |
 | breastplayjiggle (胸部物理) | on, 0.85 | Describe how the breasts bounce, jiggle or sway and what drives it |
+| VBVR Pro (动作推理 VBVR) | on, 1.0 | No trigger; helps the model follow the written beats. Lower to 0.5 if motion gets exaggerated |
+
+The v5 base model (PinkCherry) was trained on NSFW captions, and its
+heretic text encoder passes explicit words through instead of softening them,
+so the plain trained words above matter even more there.
+
+Both workflows run at cfg 1.0 with no negative prompt (a negative prompt has
+no effect at cfg 1.0). Write what you want into the positive prompt instead
+of listing what to avoid.
 
 For explicit requests use these plain words instead of euphemisms. The base
 model alone renders genitals poorly; the LoRAs supply them, which is why the
@@ -121,8 +145,8 @@ Follow `ref-en.txt` for the six sections. Practical points:
 | Symptom | Fix |
 |---|---|
 | Character too lively, random motion | Static camera with the exclusion list; fewer beats; drop adverbs |
-| Cheerful music | `non_diegetic_music: N/A` |
-| Shallow motion, wrong insertion point | Close shot of the contact area; one insertion or withdrawal per beat; only one partner moves |
+| Cheerful music, extra voices | `non_diegetic_music: N/A`; end the soundscape with what must not be heard (§5) |
+| Shallow motion, wrong insertion point | Contact as an absolute state, no hovering words (§3); close shot of the contact area; one insertion or withdrawal per beat; only one partner moves |
 | Style turns realistic | Keep `2d anime style, 2D-animated`; HMNSFW off; MysticXXX ≤ 0.3 |
 | Identity or outfit drifts | Longer first-frame anchor; 5 s; Ref2VA with a retention list |
 | Strange sounds | Source + material + rhythm; dialogue only inside `<d>` |
@@ -133,7 +157,9 @@ Follow `ref-en.txt` for the six sections. Practical points:
 - MiniMax-AI/MiniMax-H3 `skills/h3-prompt-writing` @ a107547 (2026-08-11):
   `base-en.txt`, `ref-en.txt`; `skills/3d-animation-short-generator`
   (per-second directives).
-- `research_reports/minimax-h3/nsfw.md` §6, §8 (Discord/Telegram, to 2026-10-11).
+- `research_reports/minimax-h3/nsfw.md` §6, §8 (Discord/Telegram, to 2026-10-11);
+  §18–§20 (Telegram group workflow `h3-i2va-nsfw.json` and the 10-16 update:
+  soundscape exclusion, closing consistency line, contact anchoring).
 - Civitai pages: 2D Anime Style NSFW (2861135), MysticXXX (2856467), HMNSFW AIO
   (2834417), H3 Eros Max (2851079).
 - Group workflow `MiniMax_H3_GUI_Segment_00099_` (August): exclusion-list
