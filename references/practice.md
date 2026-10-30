@@ -12,12 +12,14 @@ The user's cloud workflows live in
 
 | Workflow | Mode | Prompt node |
 |---|---|---|
-| `i2v_00172_nsfw_v5.json` | I2VA (PinkCherry v1.8 hybrid, heretic text encoder, rzgar 8-step motion enhancer + NSFW LoRAs) | `MiniMaxH3ImageToVideo` #131 |
+| `i2v_00172_nsfw_v5.json` | I2VA (PinkCherry v1.8 hybrid, heretic text encoder, rzgar 8-step motion enhancer + NSFW LoRAs). The first test on 2026-10-21 smeared into ghosting; use v4 until it is fixed (`nsfw.md` §21) | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_00172_nsfw_v4.json` | I2VA (official FL2VA, Turbo v4 + NSFW LoRAs + VBVR) | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_00172_nsfw.json` … `_v3.json` | Older NSFW versions, kept to reproduce old results | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_00172_turbo.json` | I2VA (official FL2VA, Turbo v4) | `MiniMaxH3ImageToVideo` #131 |
 | `i2v_fl2va_ref2va_quality_chain.json` | I2VA / T2VA with Motion Context; Ref2VA part bypassed | `User Prompt` #121 |
 | `r2v_hybrid_selflift_00268.json` | Ref2VA (Hybrid loader + SelfLift) | `Input Text (Prompt)` #138 |
+| `i2v_long_chain_ref_v3.json` | Ref2VA chain, H3 Motion Context (long videos, §8). Switches: 参考图 2 (`<Picture 2>`), LoRA (MysticXXX), both off | H3 Studio chain card: the image's prompt, segments split by `---` lines |
+| `i2v_long_chain_ref_v2.json` / `_fl_v2.json` | Same without the switches; the FL2VA chain flashes at every join, use Ref2VA | Same |
 
 The image goes into the workflow's LoadImage; the prompt only refers to it as
 `<Picture 1>`.
@@ -136,11 +138,105 @@ Follow `ref-en.txt` for the six sections. Practical points:
 - A reference video that drives motion: define the person as `<Subject 1>`
   whose look comes from `<Picture 1>` and whose motion comes from `<Video 1>`;
   its sound becomes `<Audio N>` only if the workflow feeds the audio track.
-- Long videos: do not chain segments by feeding the previous segment's last
-  frame alone; the blur compounds (Discord, 2026-10-05). Give every segment
-  the identity reference image and plan each segment as its own shot.
+- Long videos: see §8. Do not chain segments by feeding the previous
+  segment's last frame alone; the blur compounds (Discord, 2026-10-05).
 
-## 8. Troubleshooting
+## 8. Long videos (chain cards)
+
+One H3 clip is at most 15 s (328 frames). Longer videos come in two kinds:
+
+- **One continuous take** (the same place and framing, the action goes on):
+  a chain card in H3 Studio with a chain workflow (§1). Each segment
+  continues from the last 22 frames of the previous segment's latent, so
+  motion and sound carry over. Tested 2026-10-29/30: 20 s chains with joins
+  that are hard to see; the Ref2VA chain holds identity and colors, while a
+  single 13.7 s shot reframed itself after about 9 s.
+- **A cut film** (different shot sizes, places or times): plan separate shots
+  of up to 15 s each and edit them together afterwards, the way the official
+  `3d-animation-short-generator` skill does. That is not a chain card.
+
+### 8.1 Plan the segments first
+
+Write a short segment table before any prompt, one row per segment
+(adapted from the official 3D-short shot table's Continuity Handoff column):
+
+| Segment | Frames | Starts from | Action | Ends on | Sound |
+|---|---|---|---|---|---|
+| 1 | 175 | `<Picture 1>` as is | … | exact pose, hands, prop, gaze, position | … |
+| 2 | 175 | segment 1's end state, word for word | … | … | … |
+
+- Frames per segment: 124 / 175 / 226 / 277 / 328 only (5.17 / 7.29 / 9.42 /
+  11.54 / 13.67 s at 24 fps). 5–10 s segments work best; 175 is the default.
+- From segment 2 on, the first 22 frames (about 0.92 s) are the overlap with
+  the segment before and are cut from the joined video.
+- Every "Ends on" must be a state H3 can hold still: where each hand is, what
+  the props are doing, which way she faces, where she stands in the frame.
+  Reading the "Starts from" column down must give one unbroken chain.
+
+### 8.2 Write each segment
+
+The chain card's prompt holds every segment; a line starting with `---`
+separates them. Each segment is a complete Ref2VA prompt (all six sections,
+ref-en.txt):
+
+- `subject_definitions` and the attribute list in `retention_analysis` are
+  copied word for word into every segment; the reference image goes to every
+  segment, and identical wording keeps identity from drifting.
+- Segment 1: `<Picture 1>` is the first frame of `[Shot 1]`; summary type
+  `[keyframe completion + reference generation]`; `[Shot 1] The shot begins
+  from <Picture 1>.` (the workflow pins `<Picture 1>` to frame 0 here only).
+- Segment 2 on: no `<Picture N>` frame line; summary type `[reference
+  generation]` with "continuing directly from the preceding moment";
+  `[Shot 1] The shot continues directly from the previous moment in the same
+  framing.`, then restate the previous segment's end state in the same words.
+- One shot per segment (no `[Shot 2]` cut; untested with Motion Context).
+  The same camera in every segment: static with the exclusion list (§4) is
+  the safest; a slow move must continue in the same direction and speed.
+  Keep the same location, lighting and color sentence; nobody leaves the
+  frame.
+- Timed beats (§3) cover the segment from 0 to its exact length (`From 5.5
+  to 7.29 seconds`). In segment 2 on, the first beat (0–1 s) holds or
+  continues the end state; the new action starts after it. The key action
+  goes in the middle of the chain and of each segment, not in the last
+  second of either.
+- Sound: a continuous sound (wind, a hum, rain) is written in both segments
+  at a join, and its rise or fall continues where it left off. A line of
+  dialogue never crosses a join. `non_diegetic_music: N/A` in every segment;
+  music is added once to the joined video.
+- NSFW chains: restate the contact as an absolute state (§3) in every
+  segment's end state and start; the LoRA switch applies to the whole chain
+  unless a segment sets it (below).
+
+### 8.3 Per-segment settings
+
+The rest of a `---` line sets the segment after it, as `name=value` pairs
+separated by spaces; a `---` line before segment 1 sets segment 1:
+
+```text
+--- 帧数=226 种子=99
+--- 参考图 2=图2 LoRA=开
+```
+
+Names: `帧数` (frames), `种子` (seed), `时长`, `参考图` (the input image), a
+parameter's name on the card (e.g. `参考图 2`), or a switch with `开` / `关`.
+Images are `图N` (the N-th image of the workspace) or a file name; through
+video-gen, `--upload <file>` and the file name. Resolution and model cannot
+change per segment. A segment that uses `<Picture 2>` sets `参考图 2=…` and
+defines `<Picture 2>`'s subject in that segment only.
+
+### 8.4 Check a chain
+
+- Each segment has all six sections; definitions and retention lists are
+  identical across segments.
+- Segment 1 begins from `<Picture 1>`; every later segment continues and
+  restates the previous end state.
+- Beats cover each segment exactly; no segment over 328 frames.
+- Camera, location and lighting are the same in every segment.
+- No dialogue line or key action sits on a join or in the last second.
+- The frame count of every segment that differs from the card is set on its
+  `---` line.
+
+## 9. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -151,6 +247,10 @@ Follow `ref-en.txt` for the six sections. Practical points:
 | Identity or outfit drifts | Longer first-frame anchor; 5 s; Ref2VA with a retention list |
 | Strange sounds | Source + material + rhythm; dialogue only inside `<d>` |
 | Last action missing | Move it to the middle beat; time the beats (§3) |
+| Chain: a later segment restarts or jumps instead of continuing | Restate the previous end state word for word and hold it for the first second (§8.2) |
+| Chain: identity or outfit drifts segment by segment | Identical subject definitions and retention lists in every segment; Ref2VA chain, not FL2VA |
+| Chain: a flash or color jump at a join | Same color/lighting sentence in every segment; Ref2VA chain (FL2VA brightens and desaturates at each join) |
+| Chain: the camera drifts or the character walks out of frame | Static camera with the exclusion list in every segment; keep her position in each end state |
 
 ## Sources
 
@@ -164,3 +264,8 @@ Follow `ref-en.txt` for the six sections. Practical points:
   (2834417), H3 Eros Max (2851079).
 - Group workflow `MiniMax_H3_GUI_Segment_00099_` (August): exclusion-list
   camera lock, timed beats, attribute-by-attribute retention.
+- Long videos: `research_reports/minimax-h3/long-video/README.md` (chain
+  tests 2026-10-29/30, H3 Motion Context 0.7.1); H3 Studio README (chain
+  cards, per-segment settings); MiniMax-AI/MiniMax-H3
+  `skills/3d-animation-short-generator` `references/shot-table-spec.md`
+  (continuity handoff, per-second coverage, cut films).

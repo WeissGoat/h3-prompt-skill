@@ -1,6 +1,6 @@
 ---
 name: h3-prompt
-description: "Write, fix or explain MiniMax H3 (海螺 3) video prompts for ComfyUI, SFW or explicit adult NSFW, especially making anime/AI images move (图生视频): I2VA first-frame line, integrated_multimodal_description / overall_soundscape / non_diegetic_music, Ref2VA six sections, FL2VA/L2VA/T2VA, camera, sound, dialogue, timed beats, and the trigger words of the user's H3 LoRAs. Use when the user wants an H3 prompt, asks why an H3 clip came out wrong, or wants a prompt for the cloud workflows in research_reports/minimax-h3/workflows/cloud."
+description: "Write, fix or explain MiniMax H3 (海螺 3) video prompts for ComfyUI, SFW or explicit adult NSFW, especially making anime/AI images move (图生视频): I2VA first-frame line, integrated_multimodal_description / overall_soundscape / non_diegetic_music, Ref2VA six sections, FL2VA/L2VA/T2VA, camera, sound, dialogue, timed beats, long videos made of chained segments (H3 Studio chain cards, `---` segments), and the trigger words of the user's H3 LoRAs. Use when the user wants an H3 prompt, a prompt for a video longer than 15 s, asks why an H3 clip came out wrong, or wants a prompt for the cloud workflows in research_reports/minimax-h3/workflows/cloud."
 ---
 
 # MiniMax H3 prompts
@@ -18,7 +18,8 @@ Never publish it.
 - [references/practice.md](references/practice.md): required for every
   prompt. Content rules (first-frame anchor, motion beats, camera, sound),
   NSFW vocabulary, the LoRAs in the user's workflows, where each workflow
-  takes its prompt, and a troubleshooting table.
+  takes its prompt, long videos as chained segments (§8), and a
+  troubleshooting table.
 - [references/base-en.txt](references/base-en.txt): official guide for T2VA,
   I2VA, FL2VA, L2VA. Read it for anything beyond a single-shot I2VA: cuts and
   their timestamps, first-and-last frame, last frame, dialogue rules
@@ -38,17 +39,23 @@ official guide wins; on content and wording, practice.md wins.
    for this user). Two images as start and end → FL2VA. Image as the ending →
    L2VA. No image → T2VA. Images/video/audio used as identity, motion or
    sound references → Ref2VA. If the target workflow is known, its mode
-   decides (practice.md §1).
+   decides (practice.md §1). Longer than 15 s, or the user says 长视频 /
+   接续: one continuous take → a Ref2VA chain (practice.md §8); a story with
+   cuts → separate shots edited together.
 2. **Look.** If the image is available, look at it and note style, characters,
    outfit details, pose, setting, lighting. Otherwise work from the user's
    description and do not invent details.
 3. **Plan.** Duration (default 5 s), beats (practice.md §3), camera (§4),
    sounds (§5), dialogue if asked. SFW or NSFW follows the user's request.
+   A chain: the segment table first (§8.1), each segment's end state the
+   next one's start.
 4. **Write** in the official structure:
    - I2VA: the fixed first line, a blank line, then
      `integrated_multimodal_description:`, `overall_soundscape:`,
      `non_diegetic_music:`, each separated by a blank line.
    - Ref2VA: the six sections of ref-en.txt in order.
+   - Chain: every segment a complete Ref2VA prompt, segments separated by a
+     `---` line that may carry that segment's settings (practice.md §8.2–8.3).
    - English throughout; dialogue keeps its language inside `<d>[Language] …</d>`.
 5. **Check** (fix before answering):
    - Field names exact and in order; I2VA first line verbatim.
@@ -60,13 +67,17 @@ official guide wins; on content and wording, practice.md wins.
    - Nothing added that the user did not ask for (characters, props, outfit
      or scene changes).
    - Anime: `2d anime style, 2D-animated` opens `[Shot 1]`.
+   - Chain: the checklist in practice.md §8.4.
 6. **Answer** in the user's language: the prompt in one `text` code block,
    then two or three lines on where to paste it, which LoRA groups to switch
    on or off, and suggested settings (0.7 MP, fixed seed while iterating).
+   For a chain: the segment table first, then the whole prompt in one block
+   for the chain card, which workflow, the card's frame count, and the cost
+   (about $0.09 per 175-frame segment plus about $0.09 per batch start).
    When fixing a prompt, say what was wrong first.
 
 ## Out of scope
 
 Writing the image itself, editing workflows, or running Modal. Point to
-nsfw-prompt-guide.md` for the human-facing
+`research_reports/minimax-h3/nsfw-prompt-guide.md` for the human-facing
 version of these rules and its DeepSeek system prompt.
