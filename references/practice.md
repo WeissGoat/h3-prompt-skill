@@ -20,6 +20,8 @@ The user's cloud workflows live in
 | `r2v_hybrid_selflift_00268.json` | Ref2VA (Hybrid loader + SelfLift) | `Input Text (Prompt)` #138 |
 | `i2v_long_chain_ref_v3.json` | Ref2VA chain, H3 Motion Context (long videos, §8). Switches: 参考图 2 (`<Picture 2>`), LoRA (MysticXXX), both off | H3 Studio chain card: the image's prompt, segments split by `---` lines |
 | `i2v_long_chain_ref_v2.json` / `_fl_v2.json` | Same without the switches; the FL2VA chain flashes at every join, use Ref2VA | Same |
+| `long_wanwu_v2.json` | Ref2VA, one segment per run (万物皆可接续 Clip Bin). Reference images are `<Picture 1>`, `<Picture 2>`… in the order of its image list; segment 2 on is written like §8.2 | `提示词` #5518; the run steps are in `long_wanwu_v2.md` next to it |
+| `long_continuum_v39.json` | H3 Continuum: all chunks in one prompt, Timeline format (`[0-5s]` header on its own line, the chunk below it), `@R1`… for reference images | `Text (Multiline)` #188; see `long_continuum_v39.md` |
 
 The image goes into the workflow's LoadImage; the prompt only refers to it as
 `<Picture 1>`.
