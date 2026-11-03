@@ -1,6 +1,6 @@
 ---
 name: h3-prompt
-description: "Write, fix or explain MiniMax H3 (海螺 3) video prompts for ComfyUI, SFW or explicit adult NSFW, especially making anime/AI images move (图生视频): I2VA first-frame line, integrated_multimodal_description / overall_soundscape / non_diegetic_music, Ref2VA six sections, FL2VA/L2VA/T2VA, camera, sound, dialogue, timed beats, long videos made of chained segments (H3 Studio chain cards, `---` segments), and the trigger words of the user's H3 LoRAs. Use when the user wants an H3 prompt, a prompt for a video longer than 15 s, asks why an H3 clip came out wrong, or wants a prompt for the cloud workflows in research_reports/minimax-h3/workflows/cloud."
+description: "Write, fix or explain MiniMax H3 (海螺 3) video prompts for ComfyUI, SFW or explicit adult NSFW, especially making anime/AI images move (图生视频): I2VA first-frame line, integrated_multimodal_description / overall_soundscape / non_diegetic_music, Ref2VA six sections, FL2VA/L2VA/T2VA, camera, sound, dialogue, timed beats, long videos made of chained segments (H3 Studio chain cards, triple-dash segments), and the trigger words of the user's H3 LoRAs. Use when the user wants an H3 prompt, a prompt for a video longer than 15 s, asks why an H3 clip came out wrong, or wants a prompt for the cloud workflows in research_reports/minimax-h3/workflows/cloud."
 ---
 
 # MiniMax H3 prompts
@@ -18,8 +18,8 @@ Never publish it.
 - [references/practice.md](references/practice.md): required for every
   prompt. Content rules (first-frame anchor, motion beats, camera, sound),
   NSFW vocabulary, the LoRAs in the user's workflows, where each workflow
-  takes its prompt, long videos as chained segments (§8), and a
-  troubleshooting table.
+  takes its prompt, long videos as chained segments (§8), backgrounds for
+  clips that will be made transparent (§9), and a troubleshooting table.
 - [references/base-en.txt](references/base-en.txt): official guide for T2VA,
   I2VA, FL2VA, L2VA. Read it for anything beyond a single-shot I2VA: cuts and
   their timestamps, first-and-last frame, last frame, dialogue rules
@@ -68,6 +68,8 @@ official guide wins; on content and wording, practice.md wins.
      or scene changes).
    - Anime: `2d anime style, 2D-animated` opens `[Shot 1]`.
    - Chain: the checklist in practice.md §8.4.
+   - Transparent clip: flat green or mid-grey background stated and
+     repeated, no glow or particles, loop returns to the first pose (§9).
 6. **Answer** in the user's language: the prompt in one `text` code block,
    then two or three lines on where to paste it, which LoRA groups to switch
    on or off, and suggested settings (0.7 MP, fixed seed while iterating).

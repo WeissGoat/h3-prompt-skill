@@ -238,7 +238,41 @@ defines `<Picture 2>`'s subject in that segment only.
 - The frame count of every segment that differs from the card is set on its
   `---` line.
 
-## 9. Troubleshooting
+## 9. Backgrounds for transparent video
+
+H3 has no alpha. A clip meant to become transparent (game sprites, animated
+portraits, overlays) is generated on a flat colour and matted afterwards;
+the video-gen skill's `references/transparent-video.md` does the matting.
+Pick the colour before writing:
+
+- **Image-to-video, small motion** (idle, breathing, blinking): pure green.
+  With the portrait as the first frame, green stays in the gaps and edges
+  and does not tint the figure.
+- **Big motion** (attacks, turns, hair thrown out) and **every Ref2VA
+  prompt**: neutral mid-grey. In reference generation H3 paints the green
+  onto the character (hair, boots, eyes) and keying removes those parts.
+
+Write the background as its own subject or sentence, and repeat it in the
+shot:
+
+- Green: `a flat, solid pure green (#00FF00) background that stays one even
+  pure green in every frame, with no shadow, no floor line, no gradient and
+  no light change`.
+- Grey: the same with `a flat, solid neutral mid-grey background`.
+- Add `no glow, no particles, no smoke, no light effects`: effects are
+  matted in as part of the figure or stain the background.
+- Whole body in frame with background visible on every side; a static
+  camera with the exclusion list (§4).
+- Hair moves as one mass; a single thin strand swinging free is where the
+  matte breaks.
+- A loop: in the last 1.5 s she returns to the first-frame pose, feet
+  fixed. The loop is closed by a crossfade afterwards.
+- Ref2VA: say in `retention_analysis` that no background colour appears on
+  her.
+- The prompt does not guarantee the colour: some seeds come back pale or
+  graded. Run two seeds.
+
+## 10. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -253,6 +287,8 @@ defines `<Picture 2>`'s subject in that segment only.
 | Chain: identity or outfit drifts segment by segment | Identical subject definitions and retention lists in every segment; Ref2VA chain, not FL2VA |
 | Chain: a flash or color jump at a join | Same color/lighting sentence in every segment; Ref2VA chain (FL2VA brightens and desaturates at each join) |
 | Chain: the camera drifts or the character walks out of frame | Static camera with the exclusion list in every segment; keep her position in each end state |
+| Transparent clip: the character turns green, or keying eats her hair and boots | Ref2VA or big motion on green; use mid-grey (§9) |
+| Transparent clip: a glow or particles stay attached after matting | Add no glow, no particles, no light effects (§9) |
 
 ## Sources
 
